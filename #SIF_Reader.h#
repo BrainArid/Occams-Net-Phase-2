@@ -1,0 +1,31 @@
+#ifndef SIF_READER_H
+#define SIF_READER_H
+
+#include <string>
+#include <vector>
+#include <utility>
+#include <tuple>
+#include <algorithm>
+#include <boost/graph/graph_traits.hpp>
+#include <boost/graph/adjacency_list.hpp>
+
+#include "Graph.h"
+
+using namespace std;
+using namespace boost;
+
+class SIF_Reader
+{
+private:
+  ifstream fin;
+
+public:
+
+    SIF_Reader(string & fileAddress);
+    Graph readGraph();
+};
+ 
+
+std::ostream& operator<<(std::ostream& os, const Graph& obj); //, const Graph& obj);
+
+#endif
