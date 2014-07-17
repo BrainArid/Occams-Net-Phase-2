@@ -1,0 +1,1 @@
+./occamsNet_p2.exe -io Tests/TestOntology.txt -in Tests/TestPPI.txt -is Tests/TestSteiner.sif

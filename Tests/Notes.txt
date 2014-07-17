@@ -1,0 +1,1 @@
+Since the PPI is composed of edges representing the probability of interaction and note just a descrete 'edge-vs-not-edge' value, we should probably use a weighted hypergeometric to calculate the outerscore.

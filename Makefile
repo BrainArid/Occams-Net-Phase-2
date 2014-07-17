@@ -18,14 +18,15 @@ release: all
 tutorial:
 	g++ $(CXXFLAGS) tutorial.cpp -o tutorial.exe
 
-occamsNet_p2: main.o graph.o
-	g++ $(CXXFLAGS) main.o graph.o -o $(OUT_EXE)
+.PHONY: test
+test: testSubgraph.o
+	g++ $(CXXFLAGS) testSubgraph.o -o $(OUT_EXE)
 
-main.o: main.cpp
-	g++ $(CXXFLAGS) -c main.cpp
+occamsNet_p2: main.o Graph.o VertexSet.o
+	g++ $(CXXFLAGS) main.o Graph.o VertexSet.o -o $(OUT_EXE)
 
-graph.o: graph.cpp
-	g++ $(CXXFLAGS) -c graph.cpp
+.o:
+	g++ $(CXXFLAGS) -c $< -o %@
 
 .PHONY: clean
 clean:

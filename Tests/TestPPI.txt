@@ -1,0 +1,10 @@
+A	pp	B
+A	pp	D
+F	pp	B
+F	pp	E
+E	pp	B
+E	pp	C
+B	pp	C
+B	pp	D
+D	pp	C
+D	pp	E
