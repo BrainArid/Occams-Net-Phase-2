@@ -16,12 +16,15 @@ SubgraphLinker::SubgraphLinker(const Graph & g1, const Graph & g2)
 
 void SubgraphLinker::linkVertexIndices()
 {
+  p2c_VertMap.resize(parent.vertCount());
+  c2p_VertMap.resize(child.vertCount());
   
+
 }
 
 Graph::Vertex SubgraphLinker::getParentVertex(const Graph::Vertex v) const
 {
-  
+  return 
 }
 
 Graph::Vertex SubgraphLinker::getChildVertex(const Graph::Vertex v) const

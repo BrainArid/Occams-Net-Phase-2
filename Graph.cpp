@@ -1,49 +1,49 @@
 #include "Graph.h"
-	//Constructors
+//Constructors
 Graph::Graph(string & name)
-	{
-	  this->name = name;
-	}
+{
+  this->name = name;
+}
 
 Graph::Graph(string & name, std::vector<BaseEdge> edges, int numberNodes) //doesn't add edges yet
-	{
-	  this->name = name;
+{
+  this->name = name;
 	  this->graph = BaseGraph(numberNodes);
 	  // this->graph = BaseGraph(edges.begin(), edges.end(), numberNodes);
 	  this->index = get(vertex_index, graph);
-	}
-	
+}
+
 std::ostream& operator<<(std::ostream& os, const Graph& obj)
-	{
-	  // write obj to stream
-	  os << "Graph: " << obj.getName() << std::endl;
-	  obj.printVertices(os);
-	  obj.printEdges(os);
-	  os << std::endl;
-	  return os;
-	}
+{
+  // write obj to stream
+  os << "Graph: " << obj.getName() << std::endl;
+  obj.printVertices(os);
+  obj.printEdges(os);
+  os << std::endl;
+  return os;
+}
 
 void Graph::printVertices(std::ostream& os) const
-	{
-	  //boost::vertex_bundle_type<Graph>::type vertexProp = get(vertex_bundle, graph);
-	  //typedef property_map<BaseGraph, edge_bundle_t>::type ewm_t;
-	  //ewm_t ewm = get (edge_bundle, graph);
-
-	  //Write out vertices
-	  os << "Vertices: ";
-	  Vertex_i v_i, v_end;
-	  int i = 0;
-	  
-	  for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
-	    {
-	      os << "[" << i++ << "] " << graph[*v_i].name << ", ";
-	    }
-	  os << std::endl;
-	}
+{
+  //boost::vertex_bundle_type<Graph>::type vertexProp = get(vertex_bundle, graph);
+  //typedef property_map<BaseGraph, edge_bundle_t>::type ewm_t;
+  //ewm_t ewm = get (edge_bundle, graph);
+  
+  //Write out vertices
+  os << "Vertices: ";
+  Vertex_i v_i, v_end;
+  int i = 0;
+  
+  for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
+    {
+      os << "[" << i++ << "] " << graph[*v_i].name << ", ";
+    }
+  os << std::endl;
+}
 
 void Graph::printEdges(std::ostream& os) const
 {
-
+  
   //Write out edges
   os << "Edges: ";
   Edge_i e_i, e_end;
@@ -81,7 +81,7 @@ void Graph::addEdgeByNamedVertices(const VertexProp & vert1, const VertexProp & 
   //if graph doesn't contain a node for vert1, add it and save index. If so, get it's index.
   Vertex v1; 
   Vertex v2;
-
+  
   //if not found
   if(!findVertexByName(vert1.name, v1))
     {
@@ -95,7 +95,7 @@ void Graph::addEdgeByNamedVertices(const VertexProp & vert1, const VertexProp & 
       v2 = add_vertex(vert2, graph);
       cout << "Added vertex " << graph[v2].name << " to graph " << this->name << endl;
     }  
-
+  
   //add new edge to graph with appropriate edge indecies
   //graph.add_edge(make_pair(index1, index2));
   add_edge(v1, v2, graph);
@@ -117,4 +117,26 @@ bool Graph::findVertexByName(const string & name, Vertex & vert) const
     }
 
   return false;
+}
+
+std::pair< Graph::Adjacency_i, Graph::Adjacency_i> Graph::getAdjacentVertices(const Graph::Vertex & v) const
+{
+  return adjacent_vertices(v, graph);
+}
+
+bool Graph::getVisitedVertex(const Graph::Vertex & v) const
+{
+  return graph[v].visited;
+}
+
+void Graph::setVisitedVertex(const Graph::Vertex & v, bool value)
+{
+   graph[v].visited = value;
+}
+
+void Graph::resetVisitedVertices()
+{
+  Vertex_i v_i,v_end;
+  for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
+    graph[*v_i].visited = false;
 }

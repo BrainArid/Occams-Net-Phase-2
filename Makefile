@@ -22,8 +22,8 @@ tutorial:
 test: testSubgraph.o
 	g++ $(CXXFLAGS) testSubgraph.o -o $(OUT_EXE)
 
-occamsNet_p2: main.o Graph.o VertexSet.o
-	g++ $(CXXFLAGS) main.o Graph.o VertexSet.o -o $(OUT_EXE)
+occamsNet_p2: main.o Graph.o VertexSet.o HypergeometricEnricher.o
+	g++ $(CXXFLAGS) main.o Graph.o VertexSet.o HypergeometricEnricher.o -o $(OUT_EXE)
 
 .o:
 	g++ $(CXXFLAGS) -c $< -o %@

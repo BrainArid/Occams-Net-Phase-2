@@ -17,14 +17,22 @@ void VertexSet::buildSet (const vector<string> & vertNames)
     }
 }
 
-VertexSet::VertexSet(const string & name, const vector<string> & vertNames, const Graph & graph)
+VertexSet::VertexSet(const string & name, const vector<Graph::Vertex> & setInGraph, const vector<string> & setNotInGraph, Graph & graph)
+  : graph(graph)
+{
+  this->name = name;
+  this->setInGraph = setInGraph;
+  this->setNotInGraph = setNotInGraph;
+}
+
+VertexSet::VertexSet(const string & name, const vector<string> & vertNames, Graph & graph)
   : graph(graph)
 {
   this->name = name;
   this->buildSet(vertNames);
 }
 
-VertexSet::VertexSet(const string & name, const Graph & graph)
+VertexSet::VertexSet(const string & name, Graph & graph)
   : graph(graph)
 {
   this->name = name;
@@ -39,7 +47,7 @@ int VertexSet::intersectionInGraphCount(const VertexSet & other) const
 {
   //must share same graph..check this
   int num = 0;
-  cout << "TEST:" << &this->graph << " ==? " << &other.getGraph() << endl;
+  //cout << "TEST:" << &this->graph << " ==? " << &other.getGraph() << endl;
   if(!((&this->graph)==(&other.getGraph())))
     num = -1;
   else
@@ -49,7 +57,7 @@ int VertexSet::intersectionInGraphCount(const VertexSet & other) const
 	{
 	  bool found = false;
 	  vector<Graph::Vertex>::const_iterator ovi, ove;
-	  for(tie(ovi, ove) = verticesInGraph(); ovi != ove && !found; ovi++)
+	  for(tie(ovi, ove) = other.verticesInGraph(); ovi != ove && !found; ovi++)
 	    {
 	      if(*ovi == *vi)
 		{
@@ -107,6 +115,11 @@ void VertexSet::unionAdd(const string & name)
     }
 }
 
+void VertexSet::addInGraph(const Graph::Vertex & v)
+{
+  this->setInGraph.push_back(v);
+}
+
 //Graph& VertexSet::getGraph() const;
 string VertexSet::getName() const
 {
@@ -149,3 +162,38 @@ void VertexSet::printNotInVertices(std::ostream& os) const
 	    }
 	  os << std::endl;
 	}
+unsigned int VertexSet::inGraphSize() const
+{
+  return this->setInGraph.size();
+}
+
+void VertexSet::getHalo(VertexSet & halo) const
+{
+  //must share same graph..check this
+  if(!((&this->graph)==(&halo.getGraph())))
+    return;
+
+  //set all vertices visited bool to false
+  graph.resetVisitedVertices();
+
+  //mark all original set vertices as already visited so they won't be included in the halo
+  for(vector<Graph::Vertex>::const_iterator it = setInGraph.begin(); it != setInGraph.end(); it++)
+    {
+      graph.setVisitedVertex(*it, true);
+    }
+
+  //add all halo vertices to halo
+  for(vector<Graph::Vertex>::const_iterator it = setInGraph.begin(); it != setInGraph.end(); it++)
+    {
+      Graph::Adjacency_i n_i, n_end;
+      for(tie(n_i, n_end) = graph.getAdjacentVertices(*it); n_i != n_end; n_i++)
+	  {
+	    //if not marked as visited, mark as visited and unionAdd
+	    if(!graph.getVisitedVertex(*n_i))
+	      {
+		graph.setVisitedVertex(*n_i, true);
+		halo.addInGraph(*n_i);
+	      }
+	  }
+    }
+}

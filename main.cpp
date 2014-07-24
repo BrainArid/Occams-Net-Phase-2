@@ -10,6 +10,7 @@
 #include "subgraph.hpp"
 #include "Graph.h"
 #include "VertexSet.h"
+#include "HypergeometricEnricher.h"
 
 using namespace std;
 using namespace boost;
@@ -19,6 +20,9 @@ string AddrOnt;
 string AddrNet;
 string AddrStein;
 string oDir;
+string AddrScoreOut;
+
+const string AddrScoreOutPrefix = "scores.txt";
 
 void printHelpMessage()
 {
@@ -36,12 +40,15 @@ void printHelpMessage()
 void extractArgs(int argc, char *argv[])
 {
   bool printHelp = argc <= 1;
-
+  
+  bool oDirProvided = false;
+  AddrScoreOut = AddrScoreOutPrefix;
+  
   cout << "argc = " << argc << endl;
   for(int i = 0; i < argc; i++)
     {
       cout << "argv[" << i << "] = " << argv[i] << endl;
-
+      
       if(strcmp(argv[i], "--in-ppi")==0 || strcmp(argv[i], "-in") == 0)
         {
           if(++i >= argc)
@@ -72,18 +79,57 @@ void extractArgs(int argc, char *argv[])
           else
             AddrOnt = argv[i];
         }
+      else if(strcmp(argv[i], "--out-score")==0 || strcmp(argv[i], "-os") == 0)
+        {
+          if(++i >= argc)
+            {
+              cout << "Expected score file output address after flag." << endl;
+              printHelp = true;
+            }
+          else
+	    AddrScoreOut = argv[i];
+        }
+      else if(strcmp(argv[i], "--out-dir")==0 || strcmp(argv[i], "-od")==0 || strcmp(argv[i], "-o")==0)
+        {
+          if(++i >= argc)
+            {
+              cout << "Expected output directory address after flag." << endl;
+              printHelp = true;
+            }
+          else
+	    {
+	      oDir = argv[i];
+	      oDirProvided = true;
+	    }
+        }
     }
+
+  //determine output file addresses based on combination of inputs
+  if(oDirProvided)
+      AddrScoreOut = oDir + "/" + AddrScoreOut;
+
+  cout << "Outputing scores to: " << AddrScoreOut << endl;
 
   if(printHelp)
     printHelpMessage();
 }
 
-void openFStream(ifstream & inStream, const string & addr)
+void openIFStream(ifstream & inStream, const string & addr)
 {
   inStream.open(addr, std::ifstream::in);
   if(!inStream.is_open())
     {
       cout << "Could not open " << addr << " for reading." << endl;
+      exit(-1);
+    }
+}
+
+void openOFStream(ofstream & outStream, const string & addr)
+{
+  outStream.open(addr, std::ifstream::out);
+  if(!outStream.is_open())
+    {
+      cout << "Could not open " << addr << " for writing." << endl;
       exit(-1);
     }
 }
@@ -150,21 +196,24 @@ void constructOntologySets(vector<VertexSet> & ontSets, ifstream & ifsOnt, Graph
   //vector<Graph::BaseEdge> edges
   
   char cline[1024];
-  string name;
+  string name, line;
  
   cout << "Constructing Ontology..." << endl;
-  while(ifsOnt.good())
+
+  ifsOnt.getline(cline, 1024);
+  line = string(cline);
+
+  while(!ifsOnt.eof() && line.compare("")!=0)
     {
-      ifsOnt.getline(cline, 1024);
-      string line(cline);
       stringstream ss(line);
       ss >> name;
+      cout << ss << "--";
 
       VertexSet set(name, graph);
       
       //ignore source info
       ss >> name;
-
+      cout << ss << "--";
       //create elements 
       while(ss.good())
 	{
@@ -172,9 +221,30 @@ void constructOntologySets(vector<VertexSet> & ontSets, ifstream & ifsOnt, Graph
 	  set.unionAdd(name);
 	}
       cout << set << endl;
+
+      ontSets.push_back(set);
+
+      //get next line
+      ifsOnt.getline(cline, 1024);
+      line = string(cline);
     }
 
   cout << "Ontology Construction complete." << endl;
+}
+
+void outputScoreFile(VertexSet & steiner, vector<VertexSet> & ontology, ofstream & ofsScore, Graph & graph)
+{
+ //calculate inner score and outer and middle scores
+  HypergeometricEnricher innerEnricher(graph, steiner);
+  VertexSet halo("halo", graph);
+  steiner.getHalo(halo);
+  HypergeometricEnricher outerEnricher(graph, halo);
+
+  ofsScore << "Ontology\tInner\tOuter\tMiddle" << endl;
+  for(vector<VertexSet>::const_iterator it = ontology.begin(); it != ontology.end(); it++)
+    {
+      ofsScore << it->getName() << "\t" << innerEnricher.enrich(*it) << "\t" << outerEnricher.enrich(*it) << endl;
+    }
 }
 
 int main(int argc, char *argv[])
@@ -191,25 +261,27 @@ int main(int argc, char *argv[])
 
   //construct IntrNet
   ifstream ifsNet;
-  openFStream(ifsNet, AddrNet);
+  openIFStream(ifsNet, AddrNet);
   constructIntrNet(IntrNet, ifsNet);
   ifsNet.close();
 
   //construct steinerTree as vertexSet of IntrNet
   ifstream ifsStein;
-  openFStream(ifsStein, AddrStein);
+  openIFStream(ifsStein, AddrStein);
   constructSteinerSet(SteinerSet, ifsStein);
   ifsStein.close();
 
   //construct ontology
   ifstream ifsOnt;
-  openFStream(ifsOnt, AddrOnt);
+  openIFStream(ifsOnt, AddrOnt);
   constructOntologySets(OntologySets, ifsOnt, IntrNet);
   ifsOnt.close();
 
-  //calculate inner score and outer and middle scores
-
   //output scores per gene set
+  ofstream ofsScore;
+  openOFStream(ofsScore, AddrScoreOut);
+  outputScoreFile(SteinerSet, OntologySets, ofsScore, IntrNet);
+  ofsScore.close();
 
   return 0;
 }

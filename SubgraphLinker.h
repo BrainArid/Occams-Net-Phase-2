@@ -18,13 +18,15 @@ class Graph
 {
 
 private:
-    Graph & g1, g2;
+    Graph & parent, child;
+vector<int> p2c_VertMap;//parent to child vertex map
+vector<int> c2p_VertMap;//child to parent vertex map
 
     Graph::Vertex getVertex(const Graph::Vertex v, bool from1) const;
 
 public:
 
-    SubgraphLinker(const Graph & g1, const Graph & g2);
+    SubgraphLinker(const Graph & parent, const Graph & child);
     void linkVertexIndices();
     Graph::Vertex getParentVertex(const Graph::Vertex v) const;
     Graph::Vertex getChildVertex(const Graph::Vertex v) const;

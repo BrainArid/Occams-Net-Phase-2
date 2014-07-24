@@ -20,6 +20,7 @@ public:
 
     struct VertexProp{
       string name;
+      bool visited; //this should probably be an external property
     };
 
     struct EdgeProp{
@@ -36,6 +37,7 @@ typedef adjacency_list<vecS, vecS, undirectedS, VertexProp, EdgeProp > BaseGraph
 
     typedef graph_traits<BaseGraph>::vertex_iterator Vertex_i;
     typedef graph_traits<BaseGraph>::edge_iterator Edge_i;
+    typedef graph_traits<BaseGraph>::adjacency_iterator Adjacency_i;
 
 private:
     string name;
@@ -55,6 +57,10 @@ public:
     string getVertexName( const Graph::Vertex & v) const;
     void addEdgeByNamedVertices(const VertexProp & vert1, const VertexProp & vert2);
     bool findVertexByName(const string & name, Vertex & vert) const;
+   std::pair< Adjacency_i, Adjacency_i> getAdjacentVertices(const Graph::Vertex & v) const;
+    bool getVisitedVertex(const Graph::Vertex & v) const;
+    void setVisitedVertex(const Graph::Vertex & v, bool value);
+    void resetVisitedVertices();
 };
  
 
