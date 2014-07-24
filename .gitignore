@@ -10,3 +10,13 @@
 hw
 
 hw.cpp
+
+*.cpp#
+
+#SubgraphLinker.cpp#
+
+#SubgraphLinker.h#
+
+.#SubgraphLinker.cpp
+
+.#SubgraphLinker.h
