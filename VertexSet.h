@@ -39,6 +39,9 @@ public:
   void unionAdd(const string & name);
   void addInGraph(const Graph::Vertex & v);
   string getName() const;
+  vector<Graph::Vertex> getSetInGraph() const;
+  vector<string> getSetNotInGraph() const;
+  Graph& getGraph() const;
   void printInVertices(std::ostream& os) const;
   void printNotInVertices(std::ostream& os) const;
   unsigned int inGraphSize() const;

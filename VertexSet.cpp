@@ -126,6 +126,20 @@ string VertexSet::getName() const
   return name;
 }
 
+vector<Graph::Vertex> VertexSet::getSetInGraph() const
+{
+  return setInGraph;
+}
+
+vector<string>  VertexSet::getSetNotInGraph() const
+{
+  return setNotInGraph;
+}
+Graph&  VertexSet::getGraph() const
+{
+  return graph;
+}
+
 std::ostream& operator<<(std::ostream& os, const VertexSet& obj)
 	{
 	  // write obj to stream
@@ -221,7 +235,10 @@ VertexSet& VertexSet::operator=(const VertexSet& other)
 {
   if (this != &other) 
     { // self-assignment check expected
-
+      this->name = other.getName();
+      this->setInGraph = other.getSetInGraph();
+      this->setNotInGraph = other.getSetNotInGraph();
+      this->graph = other.getGraph();
     }
   return *this;
 }
