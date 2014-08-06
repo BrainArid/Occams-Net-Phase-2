@@ -35,7 +35,7 @@ public:
   int intersectionInGraphCount(const VertexSet & other) const; //must share same graph..check this
   pair<vector<Graph::Vertex>::const_iterator, vector<Graph::Vertex>::const_iterator > verticesInGraph() const;
   pair<vector<string>::const_iterator, vector<string>::const_iterator > verticesNotInGraph() const;
-  const Graph & getGraph() const;
+  // const Graph & getGraph() const;
   void unionAdd(const string & name);
   void addInGraph(const Graph::Vertex & v);
   string getName() const;
