@@ -216,3 +216,12 @@ void VertexSet::fadeVertexWeights()
 
   graph.finalizeReweightedVertices();
 }
+
+VertexSet& VertexSet::operator=(const VertexSet& other)
+{
+  if (this != &other) 
+    { // self-assignment check expected
+
+    }
+  return *this;
+}

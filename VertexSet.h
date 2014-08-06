@@ -44,6 +44,7 @@ public:
   unsigned int inGraphSize() const;
   void getHalo(VertexSet & halo) const; //halo is expected to be an empty VertexSet sharing the same graph with this
   void fadeVertexWeights();
+  VertexSet& operator=(const VertexSet& other);
 };
  
 
