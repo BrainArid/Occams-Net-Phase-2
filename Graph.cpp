@@ -1,4 +1,6 @@
 #include "Graph.h"
+#include "VertexSet.h"
+
 //Constructors
 Graph::Graph(string & name)
 {
@@ -36,7 +38,7 @@ void Graph::printVertices(std::ostream& os) const
   
   for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
     {
-      os << "[" << i++ << "] " << graph[*v_i].name << ", ";
+      os << "[" << i++ << "] " << graph[*v_i].name << " = " << graph[*v_i].weight << ", ";
     }
   os << std::endl;
 }
@@ -50,7 +52,8 @@ void Graph::printEdges(std::ostream& os) const
   for( tie(e_i, e_end) = edges(graph); e_i != e_end; e_i++)
     {
       os << "(" << index[source(*e_i, graph)] 
-	 << "," << index[target(*e_i, graph)] << ") ";
+	 << "," << index[target(*e_i, graph)] << ") = "
+	 << graph[*e_i].weight << " ";
     }
   os << std::endl;
 }
@@ -76,7 +79,71 @@ string Graph::getVertexName( const Graph::Vertex & v) const
   return graph[v].name;
 }
 
+float Graph::getVertexWeight( const Graph::Vertex & v) const
+{
+  return graph[v].weight;
+}
+
+void Graph::setVertexWeight( const Graph::Vertex & v, float value)
+{
+  graph[v].weight = value;
+}
+
+float Graph::getVertexReweight( const Graph::Vertex & v) const
+{
+  return graph[v].reWeight;
+}
+
+void Graph::setVertexReweight( const Graph::Vertex & v, float value)
+{
+  graph[v].reWeight = value;
+}
+
+void Graph::fadeVertexWeights(Vertex & v, float fade, int jumps)
+{
+  //for(int i = 0; i < jumps; i++)
+  //   cout << "\t";
+  //cout << graph[v].name << "\t" << graph[v].weight << "\t" << graph[v].reWeight << "\t" << fade << endl;
+
+  //for each neighbor of v
+  Out_Edge_i ne_i, ne_e;
+  for(tie(ne_i, ne_e) = out_edges(v, graph); ne_i != ne_e; ne_i++)
+    {
+      Vertex neighbor = target(*ne_i, graph);
+      //calculate faded weight
+      float newFade = fade * graph[*ne_i].weight;
+      float newWeight = graph[neighbor].weight * newFade;
+
+      //if calculated weight of neighbor is larger than existing weight and not visited (meaning not in original focus set) then recurse
+      if(!graph[neighbor].visited)
+	{
+	  if(newWeight > graph[neighbor].reWeight)
+	    {
+	      graph[neighbor].reWeight = newWeight;
+	      graph[neighbor].reweighted = true;
+	    }
+	  
+	  graph[neighbor].visited = true;
+	  fadeVertexWeights(neighbor, newFade, jumps + 1);
+	  graph[neighbor].visited = false;
+	}
+    }
+
+  //graph[v].visited = true;
+}
+
+void Graph::addEdgeByNamedVertices(const VertexProp & vert1, const VertexProp & vert2, EdgeProp & edge)
+{
+  addEdgeByNamedVertices(vert1, vert2, true, edge);
+}
+
 void Graph::addEdgeByNamedVertices(const VertexProp & vert1, const VertexProp & vert2)
+{
+  EdgeProp edge = EdgeProp();
+  addEdgeByNamedVertices(vert1, vert2, false, edge);
+}
+
+void Graph::addEdgeByNamedVertices(const VertexProp & vert1, const VertexProp & vert2, bool useEdgeProp, EdgeProp & edge)
 {
   //if graph doesn't contain a node for vert1, add it and save index. If so, get it's index.
   Vertex v1; 
@@ -98,7 +165,11 @@ void Graph::addEdgeByNamedVertices(const VertexProp & vert1, const VertexProp & 
   
   //add new edge to graph with appropriate edge indecies
   //graph.add_edge(make_pair(index1, index2));
-  add_edge(v1, v2, graph);
+  if(!useEdgeProp)
+    add_edge(v1, v2, graph);
+  else
+    add_edge(v1, v2, edge, graph);
+
   cout << "Added edge <" << graph[v1].name << ", " << graph[v2].name << "> to graph " << this->name << endl;
 
 }
@@ -139,4 +210,25 @@ void Graph::resetVisitedVertices()
   Vertex_i v_i,v_end;
   for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
     graph[*v_i].visited = false;
+}
+
+void Graph::resetReweightedFlagVertices()
+{
+  Vertex_i v_i,v_end;
+  for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
+    graph[*v_i].reweighted = false;
+}
+
+void Graph::finalizeReweightedVertices()
+{
+  Vertex_i v_i,v_end;
+  for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
+    {
+      if(graph[*v_i].reweighted)
+	{
+	  graph[*v_i].weight = graph[*v_i].reWeight;
+	  graph[*v_i].reWeight = 0;
+	  graph[*v_i].reweighted = false;
+	}
+    }
 }

@@ -1,23 +1,25 @@
-A	pp	B
-B	pp	C
+A	pp	B	0.5
+B	C
 C	pp	D
-C	pp	E
-E	pp	F
-B	pp	G
-D	pp	H
-H	pp	I
-H	pp	K
-K	pp	L
-I	pp	J
-E	pp	I
-F	pp	J
-A	pp	M
-B	pp	N
-C	pp	O
-E	pp	S
-F	pp	V
-S	pp	R
-R	pp	Q
-Q	pp	P
-V	pp	U
-U	pp	T
+C	pp	E	=	0.5
+E	pp	F	=	0.5
+B	pp	G	=	0.5
+D	pp	H	=	0.5
+H	pp	I	=	0.5
+H	pp	K	=	0.5
+K	pp	L	=	0.5
+I	pp	J	=	0.5
+E	pp	I	=	0.5
+F	pp	J	=	0.5
+A	pp	M	=	0.5
+B	pp	N	=	0.5
+C	pp	O	=	0.5
+E	pp	S	=	0.5
+F	pp	V	=	0.5
+S	pp	R	=	0.9
+R	pp	Q	=	0.58
+Q	pp	P	=	0.1	
+V	pp	U	=	0.00035
+U	pp	T	=	0.5
+J	L	0.5
+I	L	0.5

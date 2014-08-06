@@ -145,7 +145,7 @@ void VertexSet::printInVertices(std::ostream& os) const
 	  int i = 0;
 	  
 	  for(vector<Graph::Vertex>::const_iterator it = setInGraph.begin(); it !=  setInGraph.end(); it++){
-	      os << "[" << i++ << "] " << graph.getVertexName(*it) << ", ";
+	    os << "[" << i++ << "] " << graph.getVertexName(*it) << " = " << graph.getVertexWeight(*it) << ", ";
 	    }
 	  os << std::endl;
 	}
@@ -196,4 +196,23 @@ void VertexSet::getHalo(VertexSet & halo) const
 	      }
 	  }
     }
+}
+
+void VertexSet::fadeVertexWeights()
+{
+  //set all visited = false. Visited will be used to represent focusSet nodes (faster than searching through the set at every recursion)
+  graph.resetVisitedVertices();
+  graph.resetReweightedFlagVertices();
+  
+  //Set focusSet visited = true
+   for(vector<Graph::Vertex>::iterator v_i = setInGraph.begin(); v_i != setInGraph.end(); v_i++)
+     graph.setVisitedVertex(*v_i, true);
+  
+  for(vector<Graph::Vertex>::iterator v_i = setInGraph.begin(); v_i != setInGraph.end(); v_i++)
+    {
+      cout << "Fading initiated from " << graph.getVertexName(*v_i) << "..." << endl;
+      graph.fadeVertexWeights(*v_i, 1.0, 0);
+    }
+
+  graph.finalizeReweightedVertices();
 }

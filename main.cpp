@@ -21,8 +21,12 @@ string AddrNet;
 string AddrStein;
 string oDir;
 string AddrScoreOut;
+string AddrGeneWeights;
+string AddrReweight;
+bool reweightFlag = false;
 
-const string AddrScoreOutPrefix = "scores.txt";
+const string AddrScoreOutSuffix = "scores.txt";
+const string AddrReweightSuffix = "reweight.txt";
 
 void printHelpMessage()
 {
@@ -39,10 +43,10 @@ void printHelpMessage()
 
 void extractArgs(int argc, char *argv[])
 {
-  bool printHelp = argc <= 1;
-  
+  bool printHelp = argc <= 1;  
   bool oDirProvided = false;
-  AddrScoreOut = AddrScoreOutPrefix;
+  AddrScoreOut = AddrScoreOutSuffix;
+  AddrReweight = AddrReweightSuffix;
   
   cout << "argc = " << argc << endl;
   for(int i = 0; i < argc; i++)
@@ -79,6 +83,16 @@ void extractArgs(int argc, char *argv[])
           else
             AddrOnt = argv[i];
         }
+      else if(strcmp(argv[i], "--in-geneWeights")==0 || strcmp(argv[i], "-ig") == 0)
+        {
+          if(++i >= argc)
+            {
+              cout << "Expected gene weights file address after flag" << endl;
+              printHelp = true;
+            }
+          else
+            AddrGeneWeights = argv[i];
+        }
       else if(strcmp(argv[i], "--out-score")==0 || strcmp(argv[i], "-os") == 0)
         {
           if(++i >= argc)
@@ -88,6 +102,20 @@ void extractArgs(int argc, char *argv[])
             }
           else
 	    AddrScoreOut = argv[i];
+        }
+      else if(strcmp(argv[i], "--out-reweight")==0 || strcmp(argv[i], "-ow") == 0)
+        {
+          if(++i >= argc)
+            {
+              cout << "Expected reweight file output address after flag." << endl;
+              printHelp = true;
+            }
+          else
+	    {
+	      AddrReweight = argv[i];
+	      reweightFlag = true;
+	    }
+	  
         }
       else if(strcmp(argv[i], "--out-dir")==0 || strcmp(argv[i], "-od")==0 || strcmp(argv[i], "-o")==0)
         {
@@ -100,15 +128,17 @@ void extractArgs(int argc, char *argv[])
 	    {
 	      oDir = argv[i];
 	      oDirProvided = true;
+	      cout << "Output directory set to: " << oDir << endl;
 	    }
         }
     }
 
   //determine output file addresses based on combination of inputs
   if(oDirProvided)
+    {
       AddrScoreOut = oDir + "/" + AddrScoreOut;
-
-  cout << "Outputing scores to: " << AddrScoreOut << endl;
+      AddrReweight = oDir + "/" + AddrReweight;
+    }
 
   if(printHelp)
     printHelpMessage();
@@ -134,21 +164,40 @@ void openOFStream(ofstream & outStream, const string & addr)
     }
 }
 
-void constructIntrNet(Graph & intrNet, ifstream & ifsNet)
+//Can handle files with lines of any of the following format:
+//A	pp	B	0.5
+//B	C
+//C	pp	D
+//C	pp	E	=	0.5
+void constructIntrNet(Graph & intrNet, ifstream & ifs)
 {
-  //vector<Graph::BaseEdge> edges
-  
   char cline[1024];
   string nodeName1, nodeName2;
- 
-  while(ifsNet.good())
+  float edgeWeight;
+
+  while(ifs.good())
     {
-      ifsNet.getline(cline, 1024);
+      ifs.getline(cline, 1024);
       string line(cline);
       stringstream ss(line);
       ss >> nodeName1;
-      ss >> nodeName2; //skip 'pp'
       ss >> nodeName2;
+      if(nodeName2.compare("pp") == 0 || nodeName2.compare("pd") == 0 ||nodeName2.compare("(pp)") == 0 ||nodeName2.compare("(pd)") == 0)
+	ss >> nodeName2;
+
+      bool hasWeight = false;
+      if(ss.good())
+	{
+	  ss.get();
+	  if(char(ss.peek()) == '=')
+	    {
+	      ss.get();
+	      ss.get();
+	    }
+	  ss >> edgeWeight; //first could be an '='
+	  
+	  hasWeight = true;
+	}
       
       //create verticies 
       Graph::VertexProp prop1;
@@ -156,10 +205,16 @@ void constructIntrNet(Graph & intrNet, ifstream & ifsNet)
       Graph::VertexProp prop2;
       prop2.name = nodeName2;
 
-      intrNet.addEdgeByNamedVertices(prop1, prop2);
+      Graph::EdgeProp eProp;
+      if(hasWeight)
+	eProp.weight = edgeWeight;
+      else
+	eProp.weight = -1;
+      
+      intrNet.addEdgeByNamedVertices(prop1, prop2, eProp);
     }
   
-  cout << intrNet << endl;
+  //cout << intrNet << endl;
 }
 
 void constructSteinerSet(VertexSet & steinerSet, ifstream & ifsStein)
@@ -188,7 +243,41 @@ void constructSteinerSet(VertexSet & steinerSet, ifstream & ifsStein)
       steinerSet.unionAdd(nodeName2);
     }
   
-  cout << steinerSet << endl;
+  //cout << steinerSet << endl;
+}
+
+void addGeneWeights(VertexSet & weightedGenes, ifstream & ifs, Graph & graph)
+{
+  //vector<Graph::BaseEdge> edges
+  
+  char cline[1024];
+  string name, line;
+ 
+  ifs.getline(cline, 1024);
+  line = string(cline);
+
+  while(!ifs.eof() && line.compare("")!=0)
+    {
+      stringstream ss(line);
+      ss >> name;
+ 
+      Graph::Vertex v;
+      if(graph.findVertexByName(name, v))
+	{
+	  weightedGenes.addInGraph(v);
+	  
+	  float weight;
+	  ss >> weight;
+	  graph.setVertexWeight(v, weight); 
+	}
+      //can't add into notInGraph set because there's no way to keep track of weight this way.
+      
+      //get next line
+      ifs.getline(cline, 1024);
+      line = string(cline);
+    }
+
+  //  cout << weightedGenes << endl;
 }
 
 void constructOntologySets(vector<VertexSet> & ontSets, ifstream & ifsOnt, Graph & graph)
@@ -197,8 +286,6 @@ void constructOntologySets(vector<VertexSet> & ontSets, ifstream & ifsOnt, Graph
   
   char cline[1024];
   string name, line;
- 
-  cout << "Constructing Ontology..." << endl;
 
   ifsOnt.getline(cline, 1024);
   line = string(cline);
@@ -207,20 +294,18 @@ void constructOntologySets(vector<VertexSet> & ontSets, ifstream & ifsOnt, Graph
     {
       stringstream ss(line);
       ss >> name;
-      cout << ss << "--";
 
       VertexSet set(name, graph);
       
       //ignore source info
       ss >> name;
-      cout << ss << "--";
       //create elements 
       while(ss.good())
 	{
 	  ss >> name;
 	  set.unionAdd(name);
 	}
-      cout << set << endl;
+      // cout << set << endl;
 
       ontSets.push_back(set);
 
@@ -229,7 +314,6 @@ void constructOntologySets(vector<VertexSet> & ontSets, ifstream & ifsOnt, Graph
       line = string(cline);
     }
 
-  cout << "Ontology Construction complete." << endl;
 }
 
 void outputScoreFile(VertexSet & steiner, vector<VertexSet> & ontology, ofstream & ofsScore, Graph & graph)
@@ -247,9 +331,20 @@ void outputScoreFile(VertexSet & steiner, vector<VertexSet> & ontology, ofstream
     }
 }
 
+void outputNodeWeightFile(Graph & graph, VertexSet & nodes, ofstream & ofs)
+{
+ //calculate inner score and outer and middle scores
+
+  //ofs << "Gene\tWeight" << endl;
+  vector<Graph::Vertex>::const_iterator it, e_it;
+  for(tie(it, e_it)  = nodes.verticesInGraph(); it != e_it; it++)
+    {
+      ofs << graph.getVertexName(*it) << "\t" << graph.getVertexWeight(*it) << endl;
+    }
+}
+
 int main(int argc, char *argv[])
 {
-
   string name = "InterNet";
   //vector<Graph::BaseEdge> edges;
   Graph IntrNet(name); //Interaction Network
@@ -260,28 +355,63 @@ int main(int argc, char *argv[])
   extractArgs(argc, argv);
 
   //construct IntrNet
+  cout << "Main: Constructing IntrNet..." << endl;
   ifstream ifsNet;
   openIFStream(ifsNet, AddrNet);
   constructIntrNet(IntrNet, ifsNet);
   ifsNet.close();
+  cout << "Main: Constructing IntrNet Complete." << endl;
 
   //construct steinerTree as vertexSet of IntrNet
+  cout << "Main: Constructing Steiner Network..." << endl;
   ifstream ifsStein;
   openIFStream(ifsStein, AddrStein);
   constructSteinerSet(SteinerSet, ifsStein);
   ifsStein.close();
+  cout << "Main: Constructing Steiner Network Complete." << endl;
 
   //construct ontology
+  cout << "Main: Constructing Ontology..." << endl;
   ifstream ifsOnt;
   openIFStream(ifsOnt, AddrOnt);
   constructOntologySets(OntologySets, ifsOnt, IntrNet);
   ifsOnt.close();
+  cout << "Main: Constructing Ontology Complete." << endl;
 
   //output scores per gene set
+  cout << "Main: Outputing Score File..." << endl;
   ofstream ofsScore;
   openOFStream(ofsScore, AddrScoreOut);
   outputScoreFile(SteinerSet, OntologySets, ofsScore, IntrNet);
   ofsScore.close();
+  cout << "Main: Outputing Score File Complete." << endl;
 
+  //if reweighting...
+  if(reweightFlag)
+    {
+      //add weights to genes
+      cout << "Main: Adding Vertex Weights..." << endl;
+      VertexSet weightedGenes("WeightedGenes", IntrNet);
+      
+      ifstream ifsGeneWeights;
+      openIFStream(ifsGeneWeights, AddrGeneWeights);
+      addGeneWeights(weightedGenes, ifsGeneWeights, IntrNet);
+      ifsGeneWeights.close();
+      cout << "Main: Adding Vertex Weights Complete." << endl;
+      
+      cout << "Main: Fading Vertex Weights..." << endl;
+      SteinerSet.fadeVertexWeights();
+      cout << "Main: Fading Vertex Weights Complete." << endl;
+      
+      //output reweights
+      cout << "Main: Outputing Reweighted Vertex Weight File." << endl;
+      ofstream ofsReweight;
+      openOFStream(ofsReweight, AddrReweight);
+      outputNodeWeightFile(IntrNet, weightedGenes, ofsReweight);
+      ofsReweight.close();
+      cout << "Main: Outputing Reweighted Vertex Weight File Complete." << endl;
+    }
+  
+  cout << "Program complete!" << endl;
   return 0;
 }

@@ -1,0 +1,8 @@
+./occamsNet_p2.exe -io ../../Data/ontologies/c2.all.v3.1.symbols.gmt -in ../../Data/edges/homoSapien.protein.links.v9.0_SteinerWebService.txt -is ../../Data/results/triset_AvRA_FDR5_prizes_out/result_optimalForest.sif
+-o ../../Data/triset_AvRA_FDR5_prizes_out/results/phase2/
+
+./occamsNet_p2.exe -io ../../Data/ontologies/c2.all.v3.1.symbols.gmt -in ../../Data/edges/homoSapien.protein.links.v9.0_SteinerWebService.txt -is ../../Data/results/triset_AvRA_FDR5_uni_prizes_out/result_optimalForest.sif
+-o ../../Data/triset_AvRA_FDR5_uni_prizes_out/results/phase2/
+
+./occamsNet_p2.exe -io ../../Data/ontologies/c2.all.v3.1.symbols.gmt -in ../../Data/edges/homoSapien.protein.links.v9.0_SteinerWebService.txt -is ../../Data/results/triset_AvS_FDR5_prizes_out/result_optimalForest.sif
+-o ../../Data/results/triset_AvS_FDR5_prizes_out/phase2/
