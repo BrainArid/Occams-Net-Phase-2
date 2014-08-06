@@ -81,11 +81,6 @@ pair<vector<string>::const_iterator, vector<string>::const_iterator > VertexSet:
     return make_pair(setNotInGraph.begin(), setNotInGraph.end());
   }
 
-const Graph & VertexSet::getGraph() const
-{
-  return this->graph;
-}
-
 void VertexSet::unionAdd(const string & name)
 {
 
