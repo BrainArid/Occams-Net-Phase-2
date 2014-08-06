@@ -146,7 +146,7 @@ void extractArgs(int argc, char *argv[])
 
 void openIFStream(ifstream & inStream, const string & addr)
 {
-  inStream.open(addr, std::ifstream::in);
+  inStream.open(addr.c_str(), std::ifstream::in);
   if(!inStream.is_open())
     {
       cout << "Could not open " << addr << " for reading." << endl;
@@ -156,7 +156,7 @@ void openIFStream(ifstream & inStream, const string & addr)
 
 void openOFStream(ofstream & outStream, const string & addr)
 {
-  outStream.open(addr, std::ifstream::out);
+  outStream.open(addr.c_str(), std::ifstream::out);
   if(!outStream.is_open())
     {
       cout << "Could not open " << addr << " for writing." << endl;
