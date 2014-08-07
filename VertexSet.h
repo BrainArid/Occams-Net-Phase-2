@@ -45,7 +45,7 @@ public:
   void printNotInVertices(std::ostream& os) const;
   unsigned int inGraphSize() const;
   void getHalo(VertexSet & halo) const; //halo is expected to be an empty VertexSet sharing the same graph with this
-  void fadeVertexWeights();
+  void fadeVertexWeights(const int MAX_JUMPS = -1, const float MIN_FADE = -1.0);
   VertexSet& operator=(const VertexSet& other);
 };
  

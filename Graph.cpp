@@ -99,7 +99,7 @@ void Graph::setVertexReweight( const Graph::Vertex & v, float value)
   graph[v].reWeight = value;
 }
 
-void Graph::fadeVertexWeights(Vertex & v, float fade, int jumps)
+void Graph::fadeVertexWeights(Vertex & v, float fade, int jumps, const int MAX_JUMPS, const float MIN_FADE)
 {
   //for(int i = 0; i < jumps; i++)
   //   cout << "\t";
@@ -115,17 +115,18 @@ void Graph::fadeVertexWeights(Vertex & v, float fade, int jumps)
       float newWeight = graph[neighbor].weight * newFade;
 
       //if calculated weight of neighbor is larger than existing weight and not visited (meaning not in original focus set) then recurse
-      if(!graph[neighbor].visited)
+      if(!graph[neighbor].flag && (MAX_JUMPS == -1 ||jumps < MAX_JUMPS) && (MIN_FADE == -1.0 || newFade > MIN_FADE))
 	{
 	  if(newWeight > graph[neighbor].reWeight)
 	    {
 	      graph[neighbor].reWeight = newWeight;
 	      graph[neighbor].reweighted = true;
 	    }
-	  
+
+	  graph[neighbor].flag = true;
 	  graph[neighbor].visited = true;
-	  fadeVertexWeights(neighbor, newFade, jumps + 1);
-	  graph[neighbor].visited = false;
+	  fadeVertexWeights(neighbor, newFade, jumps + 1, MAX_JUMPS, MIN_FADE);
+	  graph[neighbor].flag = false;
 	}
     }
 
@@ -205,11 +206,28 @@ void Graph::setVisitedVertex(const Graph::Vertex & v, bool value)
    graph[v].visited = value;
 }
 
+bool Graph::getFlagVertex(const Graph::Vertex & v) const
+{
+  return graph[v].flag;
+}
+
+void Graph::setFlagVertex(const Graph::Vertex & v, bool value)
+{
+   graph[v].flag = value;
+}
+
 void Graph::resetVisitedVertices()
 {
   Vertex_i v_i,v_end;
   for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
     graph[*v_i].visited = false;
+}
+
+void Graph::resetFlagVertices()
+{
+  Vertex_i v_i,v_end;
+  for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
+    graph[*v_i].flag = false;
 }
 
 void Graph::resetReweightedFlagVertices()
@@ -224,11 +242,23 @@ void Graph::finalizeReweightedVertices()
   Vertex_i v_i,v_end;
   for( tie(v_i, v_end) = vertices(graph); v_i != v_end; v_i++)
     {
-      if(graph[*v_i].reweighted)
+      if(graph[*v_i].reweighted && graph[*v_i].visited)
 	{
 	  graph[*v_i].weight = graph[*v_i].reWeight;
 	  graph[*v_i].reWeight = 0;
 	  graph[*v_i].reweighted = false;
+	  graph[*v_i].visited = false;
 	}
+      else if(!graph[*v_i].reweighted && !graph[*v_i].visited)
+	{
+	  graph[*v_i].weight = -1;
+	  graph[*v_i].visited = false;
+	}
+      else if(!graph[*v_i].reweighted && graph[*v_i].visited)
+	{
+	  graph[*v_i].visited = false;
+	}
+      else
+	cout << "Error: Vertex was reweighted without being visited!" << endl;
     }
 }

@@ -28,6 +28,9 @@ bool reweightFlag = false;
 const string AddrScoreOutSuffix = "scores.txt";
 const string AddrReweightSuffix = "reweight.txt";
 
+int MAX_JUMPS = 3;
+int MIN_FADE = -1.0;//0.01;
+
 void printHelpMessage()
 {
   cout << "Printing Help:" << endl << endl;
@@ -115,7 +118,6 @@ void extractArgs(int argc, char *argv[])
 	      AddrReweight = argv[i];
 	      reweightFlag = true;
 	    }
-	  
         }
       else if(strcmp(argv[i], "--out-dir")==0 || strcmp(argv[i], "-od")==0 || strcmp(argv[i], "-o")==0)
         {
@@ -129,6 +131,36 @@ void extractArgs(int argc, char *argv[])
 	      oDir = argv[i];
 	      oDirProvided = true;
 	      cout << "Output directory set to: " << oDir << endl;
+	    }
+        }
+      else if(strcmp(argv[i], "--reweight")==0 || strcmp(argv[i], "-w")==0)
+        {
+	  reweightFlag = true;
+        }
+      else if(strcmp(argv[i], "--maxJumps")==0 || strcmp(argv[i], "-j")==0)
+        {
+	  if(++i >= argc)
+            {
+              cout << "Expected max number of jumps for reweighting vertices" << endl;
+	      printHelp = true;
+	    }
+	  else
+	    {
+	      MAX_JUMPS = atoi(argv[i]);
+	      reweightFlag = true;
+	    }
+        }
+      else if(strcmp(argv[i], "--minFade")==0 || strcmp(argv[i], "-f")==0)
+        {
+	  if(++i >= argc)
+            {
+              cout << "Expected min fade for reweighting vertices" << endl;
+	      printHelp = true;
+	    }
+	  else
+	    {
+	      MIN_FADE = atoi(argv[i]);
+	      reweightFlag = true;
 	    }
         }
     }
@@ -387,7 +419,7 @@ int main(int argc, char *argv[])
   cout << "Main: Outputing Score File Complete." << endl;
 
   //if reweighting...
-  if(reweightFlag)
+  if(reweightFlag)//CHECK THAT THIS IS WORKING ON THE SERVER
     {
       //add weights to genes
       cout << "Main: Adding Vertex Weights..." << endl;
@@ -400,7 +432,7 @@ int main(int argc, char *argv[])
       cout << "Main: Adding Vertex Weights Complete." << endl;
       
       cout << "Main: Fading Vertex Weights..." << endl;
-      SteinerSet.fadeVertexWeights();
+      SteinerSet.fadeVertexWeights(MAX_JUMPS, MIN_FADE);
       cout << "Main: Fading Vertex Weights Complete." << endl;
       
       //output reweights

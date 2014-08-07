@@ -207,20 +207,24 @@ void VertexSet::getHalo(VertexSet & halo) const
     }
 }
 
-void VertexSet::fadeVertexWeights()
+void VertexSet::fadeVertexWeights(const int MAX_JUMPS, const float MIN_FADE)
 {
   //set all visited = false. Visited will be used to represent focusSet nodes (faster than searching through the set at every recursion)
   graph.resetVisitedVertices();
+  graph.resetFlagVertices();
   graph.resetReweightedFlagVertices();
   
-  //Set focusSet visited = true
+  //Set focusSet flag = true
    for(vector<Graph::Vertex>::iterator v_i = setInGraph.begin(); v_i != setInGraph.end(); v_i++)
-     graph.setVisitedVertex(*v_i, true);
+     {
+       graph.setFlagVertex(*v_i, true);
+       graph.setVisitedVertex(*v_i, true);
+     }
   
   for(vector<Graph::Vertex>::iterator v_i = setInGraph.begin(); v_i != setInGraph.end(); v_i++)
     {
       cout << "Fading initiated from " << graph.getVertexName(*v_i) << "..." << endl;
-      graph.fadeVertexWeights(*v_i, 1.0, 0);
+      graph.fadeVertexWeights(*v_i, 1.0, 0, MAX_JUMPS, MIN_FADE);
     }
 
   graph.finalizeReweightedVertices();

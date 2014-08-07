@@ -24,6 +24,8 @@ public:
       float reWeight; //this should be an external property
       bool visited; //this should probably be an external property
       bool reweighted;
+      bool flag;
+
       VertexProp(string name = "", float weight = -1, bool visited = false)
       {
 	this->name = name;
@@ -31,6 +33,7 @@ public:
 	this->visited = visited;
 	reWeight = 0;
 	reweighted = false;
+	flag = false;
       }
     };
 
@@ -78,14 +81,17 @@ public:
     void setVertexWeight( const Graph::Vertex & v, float value);
     float getVertexReweight( const Graph::Vertex & v) const;
     void setVertexReweight( const Graph::Vertex & v, float value);
-    void fadeVertexWeights(Graph::Vertex & v, float fade, int tabs);
+    void fadeVertexWeights(Graph::Vertex & v, float fade, int tabs, const int MAX_JUMPS = -1, const float MIN_JUMPS = -1.0);
     void addEdgeByNamedVertices(const VertexProp & vert1, const VertexProp & vert2);
     void addEdgeByNamedVertices(const VertexProp & vert1, const VertexProp & vert2, EdgeProp & edge);
     bool findVertexByName(const string & name, Vertex & vert) const;
    std::pair< Adjacency_i, Adjacency_i> getAdjacentVertices(const Graph::Vertex & v) const;
     bool getVisitedVertex(const Graph::Vertex & v) const;
     void setVisitedVertex(const Graph::Vertex & v, bool value);
+    bool getFlagVertex(const Graph::Vertex & v) const;
+    void setFlagVertex(const Graph::Vertex & v, bool value);
     void resetVisitedVertices();
+    void resetFlagVertices();
     void resetReweightedFlagVertices();
     void finalizeReweightedVertices();
 };
