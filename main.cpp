@@ -28,7 +28,7 @@ bool reweightFlag = false;
 const string AddrScoreOutSuffix = "scores.txt";
 const string AddrReweightSuffix = "reweight.txt";
 
-int MAX_JUMPS = 3;
+int MAX_JUMPS = 2;
 int MIN_FADE = -1.0;//0.01;
 
 void printHelpMessage()
@@ -147,6 +147,7 @@ void extractArgs(int argc, char *argv[])
 	  else
 	    {
 	      MAX_JUMPS = atoi(argv[i]);
+	      cout << "Set MAX_JUMPS to:" << MAX_JUMPS << endl;
 	      reweightFlag = true;
 	    }
         }

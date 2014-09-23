@@ -101,9 +101,9 @@ void Graph::setVertexReweight( const Graph::Vertex & v, float value)
 
 void Graph::fadeVertexWeights(Vertex & v, float fade, int jumps, const int MAX_JUMPS, const float MIN_FADE)
 {
-  //for(int i = 0; i < jumps; i++)
-  //   cout << "\t";
-  //cout << graph[v].name << "\t" << graph[v].weight << "\t" << graph[v].reWeight << "\t" << fade << endl;
+  for(int i = 0; i < jumps; i++)
+     cout << "\t";
+  cout << graph[v].name << "\t" << graph[v].weight << "\t" << graph[v].reWeight << "\t" << fade << endl;
 
   //for each neighbor of v
   Out_Edge_i ne_i, ne_e;
