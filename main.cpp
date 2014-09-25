@@ -317,10 +317,10 @@ void constructOntologySets(vector<VertexSet> & ontSets, ifstream & ifsOnt, Graph
 {
   //vector<Graph::BaseEdge> edges
   
-  char cline[1024];
+  char cline[32768];
   string name, line;
 
-  ifsOnt.getline(cline, 1024);
+  ifsOnt.getline(cline, 32768);
   line = string(cline);
 
   while(!ifsOnt.eof() && line.compare("")!=0)
@@ -338,12 +338,12 @@ void constructOntologySets(vector<VertexSet> & ontSets, ifstream & ifsOnt, Graph
 	  ss >> name;
 	  set.unionAdd(name);
 	}
-      // cout << set << endl;
+      cout << set << endl;
 
       ontSets.push_back(set);
 
       //get next line
-      ifsOnt.getline(cline, 1024);
+      ifsOnt.getline(cline, 32768);
       line = string(cline);
     }
 

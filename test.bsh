@@ -1,1 +1,1 @@
-./occamsNet_p2.exe -io Tests/Test3Ontology.txt -in Tests/Test3PPI.sif -is Tests/Test3Steiner.sif -ig Tests/Test3GeneWeights.txt -o Tests/Data/Output -ow myRewight.txt -j 2
+./occamsNet_p2.exe -io Tests/Test4Ontology.txt -in Tests/Test3PPI.sif -is Tests/Test3Steiner.sif -ig Tests/Test3GeneWeights.txt -o Tests/Data/Output -ow myRewight.txt -j 2
